@@ -16,7 +16,7 @@ env/
 # Data & models (raw/processed/model artifacts not pushed)
 data/raw/
 data/processed/
-models/
+/models/
 mlruns/
 
 # IDE / OS
