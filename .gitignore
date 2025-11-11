@@ -1,0 +1,24 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Data & models (raw/processed/model artifacts not pushed)
+data/raw/
+data/processed/
+models/
+mlruns/
+
+# IDE / OS
+.vscode/
+.DS_Store
