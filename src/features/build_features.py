@@ -68,6 +68,12 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = X.copy()
 
+        # Ensure all expected service columns exist; if missing, default to "No"
+        # so they don't artificially increase Total_Services.
+        for col in self.service_cols_:
+            if col not in X.columns:
+                X[col] = "No"
+
         # --- Total_Services: count "Yes" across available service columns --- #
         if self.service_cols_:
             def count_services(row):
@@ -88,7 +94,7 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
             X["Avg_Charge_Per_Service"] = X["Monthly Charges"] / denom
             X["Avg_Charge_Per_Service"] = X["Avg_Charge_Per_Service"].fillna(0.0)
 
-        # --- TenureGroup: bins of Tenure Months / tenure --- #
+        # --- TenureGroup: bins of Tenure --- #
         tenure_col = None
         if "Tenure Months" in X.columns:
             tenure_col = "Tenure Months"
@@ -114,7 +120,7 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
             X["ARPU"] = X[total_charges_col] / tenure_safe
             X["ARPU"] = X["ARPU"].fillna(0.0)
 
-        # --- Contract_InternetInteraction: simple interaction feature --- #
+        # --- Contract_InternetInteraction: interaction feature --- #
         contract_col = "Contract" if "Contract" in X.columns else None
         internet_col = (
             "Internet Service"
