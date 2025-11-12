@@ -22,3 +22,6 @@ mlruns/
 # IDE / OS
 .vscode/
 .DS_Store
+
+# To keep dataset file
+!data/raw/Telco_customer_churn.xlsx
