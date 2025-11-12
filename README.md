@@ -262,3 +262,41 @@ Permission denied when running Docker	On macOS, restart Docker Desktop and retry
 
 
 
+---
+
+## 🧰 14. Using the Makefile (Quick Commands)
+
+To simplify running the full pipeline and apps, the repository includes a **Makefile** with convenient shortcuts.
+
+### 📜 Available Commands
+
+| Command | Description |
+|----------|--------------|
+| `make load_data` | Load and preprocess the raw Telco data |
+| `make train` | Train models and log metrics to MLflow |
+| `make mlflow` | Launch MLflow tracking UI on port **5001** |
+| `make api` | Run the FastAPI inference API locally |
+| `make streamlit` | Start the Streamlit dashboard |
+| `make docker-build` | Build the Docker image for the FastAPI service |
+| `make docker-run` | Run the Docker container (port **8000**) |
+| `make clean` | Remove all generated data, models, and MLflow logs |
+| `make help` | Show a quick reference of available commands |
+
+### ⚡ Example Usage
+
+```bash
+# 1. Build the dataset and train models
+make load_data
+make train
+
+# 2. Check MLflow experiment results
+make mlflow
+
+# 3. Serve predictions locally
+make api
+# or run via Docker
+make docker-build
+make docker-run
+
+# 4. Open the dashboard
+make streamlit
