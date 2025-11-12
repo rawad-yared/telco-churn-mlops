@@ -1,9 +1,11 @@
-name: CI/CD – Train → Build/Test → Push → Render Deploy
+---
+name: "CI/CD – Train → Build/Test → Push → Render Deploy"
 
-on:
+"on":
   push:
-    branches: ["main"]
-  workflow_dispatch:
+    branches:
+      - main
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -40,7 +42,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Smoke: compile sources
+      - name: "Smoke: compile sources"
         run: |
           python -m compileall src app
 
@@ -83,10 +85,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-      run: |
-      IMAGE_LC=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-      docker build -t $IMAGE_LC:latest -t $IMAGE_LC:${{ env.TAG_SHA::7 }} .
-      echo "IMAGE_LC=$IMAGE_LC" >> $GITHUB_ENV
+        run: |
+          IMAGE_LC=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t $IMAGE_LC:latest -t $IMAGE_LC:${{ env.TAG_SHA::7 }} .
+          echo "IMAGE_LC=$IMAGE_LC" >> $GITHUB_ENV
 
       - name: Run container & health-check
         run: |
@@ -95,7 +97,9 @@ jobs:
           curl -f http://localhost:8000/health
           curl -s -X POST http://localhost:8000/predict \
             -H "Content-Type: application/json" \
-            -d '{"data":{"Contract":"Month-to-month","Internet Service":"Fiber optic","Monthly Charges":80,"Tenure Months":5}}' \
+            -d '{"data":{"Contract":"Month-to-month", \
+            "Internet Service":"Fiber optic", \
+            "Monthly Charges":80,"Tenure Months":5}}' \
             | tee /tmp/predict.json
           docker logs telco-api || true
           docker stop telco-api && docker rm telco-api
@@ -113,7 +117,9 @@ jobs:
     steps:
       - name: Call Render Deploy API
         run: |
+          RENDER_BASE="https://api.render.com/v1/services/"
+          RENDER_URL="${RENDER_BASE}${{ secrets.RENDER_SERVICE_ID }}/deploys"
           curl -X POST \
             -H "Accept: application/json" \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys
+            "$RENDER_URL"
