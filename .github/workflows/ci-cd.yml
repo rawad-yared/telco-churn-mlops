@@ -11,7 +11,7 @@ permissions:
   actions: read
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
+  IMAGE_NAME: ghcr.io/rawad-yared/telco-churn-mlops
   TAG_SHA: ${{ github.sha }}
 
 jobs:
@@ -82,11 +82,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image (tag latest and short SHA)
-        run: |
-          IMAGE_LC=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t $IMAGE_LC:latest -t $IMAGE_LC:${{ env.TAG_SHA::7 }} .
-          echo "IMAGE_LC=$IMAGE_LC" >> $GITHUB_ENV
+      - name: Build Docker image
+      run: |
+      IMAGE_LC=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+      docker build -t $IMAGE_LC:latest -t $IMAGE_LC:${{ env.TAG_SHA::7 }} .
+      echo "IMAGE_LC=$IMAGE_LC" >> $GITHUB_ENV
 
       - name: Run container & health-check
         run: |
