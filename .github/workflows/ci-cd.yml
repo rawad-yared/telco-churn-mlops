@@ -1,6 +1,5 @@
 ---
-name: "CI/CD – Train → Build/Test → Push → Render Deploy"
-
+name: "CI/CD - Train -> Build/Test -> Push -> Render"
 "on":
   push:
     branches:
@@ -9,26 +8,26 @@ name: "CI/CD – Train → Build/Test → Push → Render Deploy"
 
 permissions:
   contents: read
-  packages: write   # needed for GHCR
+  packages: write
   actions: read
 
 env:
-  IMAGE_NAME: ghcr.io/rawad-yared/telco-churn-mlops
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
   train:
-    name: Train model on full dataset
+    name: "Train model"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: "Set up Python"
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Cache pip
+      - name: "Cache pip"
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -36,23 +35,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install dependencies
+      - name: "Install deps"
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: "Smoke: compile sources"
-        run: |
-          python -m compileall src app
+      - name: "Compile sources"
+        run: python -m compileall src app
 
-      - name: Load & train on real Excel
+      - name: "Train on Excel"
         run: |
           ls -l data/raw
           python -m src.data.load_data
           python -m src.models.train_model
           ls -l models
 
-      - name: Upload trained model artifact
+      - name: "Upload model"
         uses: actions/upload-artifact@v4
         with:
           name: trained-model
@@ -60,67 +58,74 @@ jobs:
           retention-days: 7
 
   build_test_push:
-    name: Build image, run health-check, push to GHCR
+    name: "Build and push image"
     needs: train
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: Download trained model
+      - name: "Download model"
         uses: actions/download-artifact@v4
         with:
           name: trained-model
           path: models
 
-      - name: Verify model present
+      - name: "Verify model"
         run: ls -l models
 
-      - name: Login to GHCR
+      - name: "Login to GHCR"
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image (tag latest and short SHA)
+      - name: "Build image"
+        shell: bash
         run: |
-          # force lowercase image name
-          IMAGE_LC=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-          # take first 7 chars in bash (NOT in ${{ }})
+          IMAGE_LC=$(echo "${{ env.IMAGE_NAME }}" \
+            | tr '[:upper:]' '[:lower:]')
           SHORT_SHA=${GITHUB_SHA::7}
-          echo "IMAGE_LC=$IMAGE_LC" >> $GITHUB_ENV
-          echo "SHORT_SHA=$SHORT_SHA" >> $GITHUB_ENV
-          docker build -t "$IMAGE_LC:latest" -t "$IMAGE_LC:$SHORT_SHA" .
+          echo "IMAGE_LC=$IMAGE_LC" >> "$GITHUB_ENV"
+          echo "SHORT_SHA=$SHORT_SHA" >> "$GITHUB_ENV"
+          docker build -t "$IMAGE_LC:latest" \
+            -t "$IMAGE_LC:$SHORT_SHA" .
 
-      - name: Run container & health-check
+      - name: "Health check"
+        shell: bash
         run: |
-          docker run -d -p 8000:8000 --name telco-api "$IMAGE_LC:latest"
+          docker run -d -p 8000:8000 --name telco "$IMAGE_LC:latest"
           sleep 10
           curl -f http://localhost:8000/health
+          printf '%s\n' '{' '"data": {' \
+            '"Contract": "Month-to-month",' \
+            '"Internet Service": "Fiber optic",' \
+            '"Monthly Charges": 80,' \
+            '"Tenure Months": 5' '}' '}' > body.json
           curl -s -X POST http://localhost:8000/predict \
             -H "Content-Type: application/json" \
-            -d '{"data":{"Contract":"Month-to-month","Internet Service":"Fiber optic","Monthly Charges":80,"Tenure Months":5}}' \
-            | tee /tmp/predict.json
-          docker logs telco-api || true
-          docker stop telco-api && docker rm telco-api
+            -d @body.json > /tmp/predict.json
+          docker logs telco || true
+          docker stop telco && docker rm telco
 
-      - name: Push image to GHCR
+      - name: "Push image"
+        shell: bash
         run: |
           docker push "$IMAGE_LC:latest"
           docker push "$IMAGE_LC:$SHORT_SHA"
 
   deploy_render:
-    name: Trigger Render deploy
+    name: "Deploy to Render"
     needs: build_test_push
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Call Render Deploy API
+      - name: "Trigger deploy"
+        shell: bash
         run: |
-          RENDER_BASE="https://api.render.com/v1/services/"
-          RENDER_URL="${RENDER_BASE}${{ secrets.RENDER_SERVICE_ID }}/deploys"
-          curl -X POST \
-            -H "Accept: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-            "$RENDER_URL"
+          API_URL="https://api.render.com/v1/services"
+          SERVICE_ID="${{ secrets.RENDER_SERVICE_ID }}"
+          AUTH="Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+            curl -X POST -H "Accept: application/json" \
+              -H "$AUTH" "$API_URL/$SERVICE_ID/deploys"
