@@ -1,10 +1,10 @@
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).resolve().parents[1]))
-
 import pandas as pd
 import streamlit as st
-from src.models.predict_model import load_model, predict_single, predict_batch
+from src.models.predict_model import (
+    load_model,
+    predict_single,
+    predict_batch,
+)
 
 
 st.set_page_config(
@@ -12,14 +12,12 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("📡 Telco Churn Prediction Dashboard")
+st.title("Telco Churn Prediction Dashboard")
 st.markdown(
     """
-This app uses the trained Telco Churn model to predict the probability that a customer will churn.
+This app uses the trained Telco Churn model to predict churn probability.
 
-You can:
-- Enter a **single customer's** details manually, or
-- Upload a **CSV** with multiple customers for batch scoring.
+You can enter a single customer's details or upload a CSV for batch scoring.
 """
 )
 
@@ -31,7 +29,7 @@ def get_model():
 
 model = get_model()
 
-tab_single, tab_batch = st.tabs(["🔹 Single Prediction", "📂 Batch Prediction"])
+tab_single, tab_batch = st.tabs(["Single Prediction", "Batch Prediction"])
 
 
 # ---------- Single Prediction ----------
@@ -133,9 +131,12 @@ with tab_single:
             value=f"{prob:.1%}",
             delta=None,
         )
-        st.markdown(
-            f"**Predicted Churn:** :{'red_circle' if label == 'Yes' else 'green_circle'}: **{label}**"
+        # Short, clear prediction summary
+        summary = (
+            f"**Predicted Churn:** {'Yes' if label == 'Yes' else 'No'} "
+            f"**{label}**"
         )
+        st.markdown(summary)
 
 
 # ---------- Batch Prediction ----------
@@ -147,8 +148,8 @@ with tab_batch:
 Upload a CSV file where each row is a customer.
 
 **Tips:**
-- Use column names similar to the original Telco dataset (e.g. `Contract`, `Internet Service`,
-  `Monthly Charges`, `Tenure Months`, etc.).
+- Use column names similar to the original Telco dataset.
+    Examples: `Contract`, `Internet Service`, `Monthly Charges`.
 - Missing fields will be handled by the preprocessing pipeline where possible.
 """
     )
@@ -172,6 +173,8 @@ Upload a CSV file where each row is a customer.
             st.download_button(
                 label="Download predictions as CSV",
                 data=csv_data,
-                file_name="telco_churn_predictions.csv",
+                file_name=(
+                    "telco_churn_predictions.csv"
+                ),
                 mime="text/csv",
             )

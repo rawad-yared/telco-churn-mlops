@@ -89,9 +89,10 @@ def _prepare_input_df(
 ) -> pd.DataFrame:
     """
     Take raw input (dict or DataFrame) and:
-    - Convert to DataFrame if needed.
-    - Ensure all columns expected by the trained pipeline exist.
-      Missing columns are filled with NaN so that imputers / logic can handle them.
+        - Convert to DataFrame if needed.
+        - Ensure all columns expected by the trained pipeline exist.
+            Missing columns are filled with NaN so that imputers and logic
+            can handle them.
     """
     if isinstance(data, dict):
         df = pd.DataFrame([data])

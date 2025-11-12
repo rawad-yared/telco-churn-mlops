@@ -10,8 +10,8 @@ from src.models.predict_model import load_model, predict_single, predict_batch
 app = FastAPI(
     title="Telco Churn Prediction API",
     description=(
-        "API for predicting customer churn using the trained Telco Churn model. "
-        "Backed by a sklearn pipeline with feature engineering and MLflow-tracked training."
+        "API for predicting customer churn using the trained model."
+        " Features a sklearn pipeline and MLflow tracking."
     ),
     version="1.0.0",
 )
@@ -57,7 +57,10 @@ class BatchCustomerPayload(BaseModel):
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "message": "Telco Churn Prediction API is running."}
+    return {
+        "status": "ok",
+        "message": "Telco Churn Prediction API is running.",
+    }
 
 
 @app.post("/predict")

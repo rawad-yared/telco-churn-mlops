@@ -13,10 +13,12 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 # ---- Paths & core columns ---- #
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-PROCESSED_DATA_PATH = BASE_DIR / "data" / "processed" / "telco_churn_clean.parquet"
+PROCESSED_DATA_PATH = (
+    BASE_DIR / "data" / "processed" / "telco_churn_clean.parquet"
+)
 
 ID_COLUMN = "customerID"
-TARGET_COLUMN = "Churn Label"  # ensured during ingestion; adjust there if needed
+TARGET_COLUMN = "Churn Label"  # ensured during ingestion; adjust if needed
 
 # Columns that are clearly leakage / post-outcome or business-derived
 LEAKAGE_COLUMNS = [
@@ -62,19 +64,23 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
 
     def fit(self, X: pd.DataFrame, y=None):
         # Remember which of these actually exist
-        self.service_cols_ = [c for c in self.service_cols_candidates if c in X.columns]
+        self.service_cols_ = [
+            c for c in self.service_cols_candidates if c in X.columns
+        ]
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
         X = X.copy()
 
-        # Ensure all expected service columns exist; if missing, default to "No"
-        # so they don't artificially increase Total_Services.
+    # Ensure all expected service columns exist; if missing,
+    # default to "No" so they don't artificially increase
+    # Total_Services.
         for col in self.service_cols_:
             if col not in X.columns:
                 X[col] = "No"
 
-        # --- Total_Services: count "Yes" across available service columns --- #
+    # --- Total_Services: count "Yes" across available service
+    # columns --- #
         if self.service_cols_:
             def count_services(row):
                 count = 0
@@ -85,14 +91,18 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
                 return count
 
             X["Total_Services"] = (
-                X[self.service_cols_].apply(count_services, axis=1).astype("float64")
+                X[self.service_cols_]
+                .apply(count_services, axis=1)
+                .astype("float64")
             )
 
         # --- Avg_Charge_Per_Service: MonthlyCharges / Total_Services --- #
         if "Monthly Charges" in X.columns and "Total_Services" in X.columns:
             denom = X["Total_Services"].replace(0, np.nan)
             X["Avg_Charge_Per_Service"] = X["Monthly Charges"] / denom
-            X["Avg_Charge_Per_Service"] = X["Avg_Charge_Per_Service"].fillna(0.0)
+            X["Avg_Charge_Per_Service"] = (
+                X["Avg_Charge_Per_Service"].fillna(0.0)
+            )
 
         # --- TenureGroup: bins of Tenure --- #
         tenure_col = None
@@ -147,7 +157,10 @@ def drop_non_features(df: pd.DataFrame) -> pd.DataFrame:
     cols_to_drop = [ID_COLUMN, TARGET_COLUMN] + [
         c for c in LEAKAGE_COLUMNS if c in df.columns
     ]
-    return df.drop(columns=[c for c in cols_to_drop if c in df.columns], errors="ignore")
+    return df.drop(
+        columns=[c for c in cols_to_drop if c in df.columns],
+        errors="ignore",
+    )
 
 
 def infer_feature_types(df: pd.DataFrame) -> Tuple[List[str], List[str]]:
@@ -232,12 +245,16 @@ def load_processed_data(path: Path = PROCESSED_DATA_PATH) -> pd.DataFrame:
     return pd.read_parquet(path)
 
 
-def get_feature_matrix_and_target(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
+def get_feature_matrix_and_target(
+    df: pd.DataFrame,
+) -> Tuple[pd.DataFrame, pd.Series]:
     """
     Given the processed dataframe, return (X, y) before sklearn transforms.
     """
     if TARGET_COLUMN not in df.columns:
-        raise ValueError(f"Target column '{TARGET_COLUMN}' not found in dataframe.")
+        raise ValueError(
+            f"Target column '{TARGET_COLUMN}' not found in dataframe."
+        )
 
     y = df[TARGET_COLUMN].copy()
     X = drop_non_features(df)

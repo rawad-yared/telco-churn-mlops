@@ -42,7 +42,8 @@ def encode_target(y_raw) -> np.ndarray:
     Encode target labels into binary 0/1.
     Assumes churn positive class is some variant of 'Yes'.
     """
-    return (y_raw.astype(str).str.strip().str.lower() == "yes").astype(int).values
+    is_yes = y_raw.astype(str).str.strip().str.lower() == "yes"
+    return is_yes.astype(int).values
 
 
 def compute_metrics(y_true, y_pred, y_proba=None) -> Dict[str, float]:
@@ -75,7 +76,8 @@ def train_and_evaluate(
     y_test,
 ) -> Tuple[Pipeline, Dict[str, float]]:
     """
-    Build full pipeline (preprocessing + model), train, evaluate and return both.
+    Build full pipeline (preprocessing + model), train and evaluate.
+    Return the trained pipeline and computed metrics.
     """
     # Build preprocessing pipeline on training data only
     preprocessor = build_preprocessing_pipeline(X_train)
@@ -217,6 +219,10 @@ def main():
             best_model_name = name
             best_pipeline = pipeline
             best_metrics = metrics
+
+    # Print best run metrics for visibility (avoids unused-assignment)
+    if best_metrics is not None:
+        print(f"Best run metrics: {best_metrics}")
 
     # 6. Persist best model pipeline to disk
     if best_pipeline is not None:

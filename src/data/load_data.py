@@ -3,8 +3,12 @@ from pathlib import Path
 
 # Base paths
 BASE_DIR = Path(__file__).resolve().parents[2]
-RAW_DATA_PATH = BASE_DIR / "data" / "raw" / "Telco_customer_churn.xlsx"
-PROCESSED_DATA_PATH = BASE_DIR / "data" / "processed" / "telco_churn_clean.parquet"
+RAW_DATA_PATH = (
+    BASE_DIR / "data" / "raw" / "Telco_customer_churn.xlsx"
+)
+PROCESSED_DATA_PATH = (
+    BASE_DIR / "data" / "processed" / "telco_churn_clean.parquet"
+)
 
 # Canonical names we will enforce
 ID_COLUMN = "customerID"
@@ -84,9 +88,10 @@ def basic_cleaning(df: pd.DataFrame) -> pd.DataFrame:
         missing.append(TARGET_COLUMN)
 
     if missing:
+        available = list(df.columns)
         raise ValueError(
             f"Missing required columns after standardization: {missing}. "
-            f"Available columns: {list(df.columns)}"
+            f"Available columns: {available}"
         )
 
     # Coerce numeric candidates where present
@@ -103,7 +108,10 @@ def basic_cleaning(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def save_processed_data(df: pd.DataFrame, path: Path = PROCESSED_DATA_PATH) -> None:
+def save_processed_data(
+    df: pd.DataFrame,
+    path: Path = PROCESSED_DATA_PATH,
+) -> None:
     """
     Save cleaned dataframe to Parquet for efficient downstream use.
     """
