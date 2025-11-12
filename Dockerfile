@@ -26,4 +26,4 @@ ENV PYTHONPATH="/app:${PYTHONPATH}"
 EXPOSE 8000
 
 # Start FastAPI when the container runs
-CMD ["uvicorn", "app.fastapi_app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.fastapi_app:app --host 0.0.0.0 --port ${PORT:-8000}"]
