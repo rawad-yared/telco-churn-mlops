@@ -1,5 +1,7 @@
 # 📡 Telco Churn MLOps Project
 
+[![CI](https://github.com/rawad-yared/telco-churn-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/rawad-yared/telco-churn-mlops/actions/workflows/ci.yml)
+
 End-to-end churn prediction project using the **IBM Telco Customer Churn** dataset, built to demonstrate practical **MLOps** concepts:
 
 - Reproducible data & feature pipelines  
