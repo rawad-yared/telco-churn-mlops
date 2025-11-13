@@ -22,10 +22,9 @@ COPY . .
 # Make project root (and src) importable
 ENV PYTHONPATH="/app:${PYTHONPATH}"
 
-# Expose a port (Render will still inject $PORT)
-EXPOSE 10000
+# Expose 8000 (local + CI + Render-compatible)
+EXPOSE 8000
 
 # Start Streamlit when the container runs
-# On Render, $PORT is provided; locally it falls back to 10000
-CMD ["sh", "-c", "streamlit run app/streamlit_app.py \
- --server.port ${PORT:-10000} --server.address 0.0.0.0"]
+# If $PORT is set (Render), use it; otherwise default to 8000 (for local + CI)
+CMD ["sh", "-c", "streamlit run app/streamlit_app.py --server.port ${PORT:-8000} --server.address 0.0.0.0"]
