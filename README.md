@@ -1,8 +1,8 @@
 # 📡 Telco Churn MLOps Project
 
-[![CI](https://github.com/rawad-yared/telco-churn-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/rawad-yared/telco-churn-mlops/actions/workflows/ci.yml)
+[![CI-CD](https://github.com/rawad-yared/telco-churn-mlops/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/rawad-yared/telco-churn-mlops/actions/workflows/ci-cd.yml)
 
-End-to-end churn prediction project using the **IBM Telco Customer Churn** dataset, built to demonstrate practical **MLOps** concepts:
+End-to-end churn prediction project using the **IBM Telco Customer Churn** dataset:
 
 - Reproducible data & feature pipelines  
 - Model training & evaluation with scikit-learn  
@@ -11,58 +11,62 @@ End-to-end churn prediction project using the **IBM Telco Customer Churn** datas
 - FastAPI API for online inference  
 - Streamlit dashboard for interactive predictions  
 
+⸻
+
+🧭 1. Project Overview
+
+A full end-to-end MLOps pipeline for predicting telecom customer churn using the IBM Telco Customer Churn dataset.
+
+The goal is to classify whether a customer will churn based on contract type, services, tenure, billing patterns, and demographics.
+
+🔧 Tech Stack:
+	•	Python 3.12, pandas, scikit-learn
+	•	MLflow for experiment tracking
+	•	FastAPI for online inference
+	•	Streamlit for dashboarding
+	•	Docker for containerization
+	•	GitHub Actions for CI/CD
+	•	GitHub Container Registry (GHCR) for image hosting
+	•	Render.com for cloud deployment
+
+🔁 MLOps Pipeline (High-Level)
+
+Git push → GitHub Actions → Train → Build → Test → Push Image → Render Deploy → Live API
+
+
+
 ---
 
-## 🧭 1. Project Overview
-
-The goal is to predict whether a telecom customer will **churn** (leave) based on their contract, services, and billing behavior.
-
-**Tech stack:**
-- Python 3.12  
-- pandas, numpy, scikit-learn  
-- MLflow for experiment tracking  
-- FastAPI + Uvicorn for model serving  
-- Streamlit for the dashboard  
-- Docker for containerization  
-
----
 
 ## 🗂️ 2. Repository Structure
 
 telco-churn-mlops/
 ├─ app/
-│  ├─ init.py
-│  ├─ fastapi_app.py        # FastAPI app exposing /health, /predict, /predict_batch
-│  └─ streamlit_app.py      # Streamlit dashboard (single + batch predictions)
+│  ├─ fastapi_app.py        # FastAPI serving API
+│  └─ streamlit_app.py      # Optional Streamlit UI
 ├─ src/
-│  ├─ data/
-│  │  └─ load_data.py       # Ingestion from XLSX → cleaned parquet
-│  ├─ features/
-│  │  └─ build_features.py  # Feature engineering + preprocessing pipeline
+│  ├─ data/load_data.py     # Load + clean dataset
+│  ├─ features/build_features.py
 │  └─ models/
-│     ├─ train_model.py     # Train + evaluate + log with MLflow + save best model
-│     └─ predict_model.py   # Load best model + single/batch inference helpers
+│     ├─ train_model.py     # Model training, MLflow logging
+│     └─ predict_model.py   # Schema-aligned inference pipeline
 ├─ data/
-│  ├─ raw/                  # (gitignored) place Telco_customer_churn.xlsx here
-│  └─ processed/            # (gitignored) parquet saved after cleaning
-├─ models/                  # (gitignored) trained model(s)
-├─ mlruns/                  # (gitignored) MLflow experiment logs
-├─ Dockerfile               # Container definition for FastAPI API
+│  ├─ raw/Telco_customer_churn.xlsx   # Dataset (tracked in Git)
+│  └─ processed/                      # Generated
+├─ models/                             # Generated (artifacts)
+├─ mlruns/                             # Local MLflow logs
+├─ Dockerfile
 ├─ requirements.txt
-├─ .gitignore
+├─ Makefile
 └─ README.md
 
-**Note:**  
-`data/`, `models/`, and `mlruns/` are **ignored by Git** — they’re generated locally by the pipeline.
-
----
 
 ## ⚙️ 3. Setup Instructions
 
 ### 🪄 Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/telco-churn-mlops.git
+git clone https://github.com/rawad-yared/telco-churn-mlops.git
 cd telco-churn-mlops
 
 🧱 Create and activate a virtual environment
@@ -81,222 +85,114 @@ pip install -r requirements.txt
 
 📊 4. Data Setup
 
-Download the Telco Customer Churn dataset (Telco_customer_churn.xlsx)
-and place it under:
+The dataset is already included and tracked:
 
 data/raw/Telco_customer_churn.xlsx
 
 
 ⸻
 
-🧩 5. Run the Pipeline (Local)
+🧩 5. Automated MLOps Pipeline (CI/CD)
 
-Step 1: Data Ingestion & Cleaning
+Once you clone the repository and install dependencies, you do not need to run the pipeline manually.
+This project uses a full CI/CD workflow with:
+	•	GitHub Actions (CI)
+	•	GitHub Container Registry (GHCR)
+	•	Render (CD)
 
-python -m src.data.load_data
+Every time you push to the main branch, the entire workflow runs end-to-end.
 
-Outputs:
-
-data/processed/telco_churn_clean.parquet
-
-Step 2: Model Training & Logging
-
-python -m src.models.train_model
-
-This trains multiple models (e.g., Logistic Regression, Random Forest), logs metrics to MLflow, and saves the best pipeline:
-
-models/best_model_<name>.joblib
-
+Below is how to set it up.
 
 ⸻
 
-📈 6. MLflow UI
+🔧 Step 1 — Create TWO Render Services
 
-To explore experiments:
-
-python -m mlflow ui --port 5001
-
-Then open:
-
-http://127.0.0.1:5001
-
-You’ll see:
-	•	Model runs (log_reg, random_forest)
-	•	Metrics (F1, ROC-AUC, precision, recall)
-	•	Saved models & artifacts
+You must create two Web Services on Render:
 
 ⸻
 
-⚡ 7. Run the FastAPI Inference Service
+1️⃣ FastAPI Production API
+	•	Render → New → Web Service
+	•	Choose “Deploy an existing image”
+	•	Use image (will be created automatically on first push):
 
-After training completes and a model exists in models/:
+ghcr.io/<your-username>/telco-churn-mlops:latest
 
-Local run (no Docker)
 
-uvicorn app.fastapi_app:app --reload
+	•	Start Command:
 
-Endpoints
+uvicorn app.fastapi_app:app --host 0.0.0.0 --port $PORT
 
-Endpoint	Description	URL
-GET /health	Health check	http://127.0.0.1:8000/health
-GET /docs	Swagger UI	http://127.0.0.1:8000/docs
-POST /predict	Single record prediction	see below
-POST /predict_batch	Batch prediction	see below
 
-Example Request /predict
-
-{
-  "data": {
-    "Contract": "Month-to-month",
-    "Internet Service": "Fiber optic",
-    "Monthly Charges": 80,
-    "Tenure Months": 5
-  }
-}
-
-Example Response
-
-{
-  "churn_prediction": "Yes",
-  "churn_probability": 0.72
-}
-
+	•	Save the service → copy the Service ID
 
 ⸻
 
-💻 8. Streamlit Dashboard
-
-Run the interactive UI for quick testing and demo.
-
-streamlit run app/streamlit_app.py
-
-Then open:
-
-http://localhost:8501
-
-Features:
-	•	Single prediction form (contract, internet service, etc.)
-	•	Batch prediction via CSV upload
-	•	Download results as CSV
-
-If you see a ModuleNotFoundError: No module named 'src', ensure:
-	•	You run Streamlit from the project root, not app/, or
-	•	Add the root path (already handled in code).
+2️⃣ Streamlit Dashboard (UI)
+	•	Create a second Web Service
+	•	Use the same GHCR image
+	•	Start Command: leave it empty
 
 ⸻
 
-🐳 9. Dockerized API Deployment
+🔐 Step 2 — Add GitHub Secrets (Required for CI/CD)
 
-Build the Docker image
+Go to:
+GitHub → Repo → Settings → Secrets → Actions
 
-docker build -t telco-churn-api .
+Create these secrets:
 
-Run the container
+Secret	What it is
+RENDER_API_KEY	From Render → Account → API Keys
+RENDER_SERVICE_ID	Streamlit Service ID
+RENDER_FASTAPI_SERVICE_ID	FASTAPI Service ID
 
-docker run -p 8000:8000 telco-churn-api
-
-Then access:
-	•	API health: http://127.0.0.1:8000/health
-	•	Docs: http://127.0.0.1:8000/docs
-
-Commands summary
-
-Action	Command
-Build image	docker build -t telco-churn-api .
-Run container	docker run -p 8000:8000 telco-churn-api
-Stop all containers	docker stop $(docker ps -q)
-
+These allow GitHub Actions to deploy automatically after building the image.
 
 ⸻
 
-🔁 10. Reproducibility & Best Practices
+🚀 Step 3 — Push to GitHub (CI/CD Runs Automatically)
 
-This project intentionally does not version:
-	•	/data/raw/
-	•	/data/processed/
-	•	/models/
-	•	/mlruns/
+Once the secrets and Render services are configured, you never run the pipeline manually again.
 
-They are regenerated locally to mimic real MLOps workflows:
+Simply do:
 
-Code in Git, artifacts in local or cloud storage.
+git add .
+git commit -m "update"
+git push
 
-To reproduce from scratch:
+GitHub Actions will automatically:
 
-python -m src.data.load_data
-python -m src.models.train_model
-uvicorn app.fastapi_app:app --reload
+CI Phase
+	1.	Install dependencies
+	2.	Load Telco dataset
+	3.	Train Logistic Regression + Random Forest
+	4.	Log metrics with MLflow
+	5.	Save the best model
+	6.	Build Docker image
+	7.	Health-check the image locally in CI
+	8.	Push image → GHCR
 
-
-⸻
-
-🧪 11. Typical Workflow Summary
-
-Step	Command	Result
-1. Load data	python -m src.data.load_data	Clean parquet ready
-2. Train models	python -m src.models.train_model	Best pipeline saved
-3. Run API	uvicorn app.fastapi_app:app --reload	/predict ready
-4. Track runs	python -m mlflow ui --port 5001	MLflow dashboard
-5. Launch Streamlit	streamlit run app/streamlit_app.py	Visual UI
-6. Containerize	docker build -t telco-churn-api .	Portable API image
-
+CD Phase
+	9.	Trigger Render deploy for FastAPI
+	10.	(Optional) Trigger Render deploy for Streamlit
+	11.	Render pulls the new image
+	12.	Your updated API + Dashboard are live automatically
 
 ⸻
 
-🧰 12. Troubleshooting
+🌐 Step 4 — Visit Your Live Services
 
-Issue	Fix
-ModuleNotFoundError: No module named 'src'	Run Streamlit from project root
-Cannot connect to Docker daemon	Open Docker Desktop first
-MLflow UI not loading	Reinstall full mlflow (not skinny): pip install mlflow==3.6.0
-Permission denied when running Docker	On macOS, restart Docker Desktop and retry
+After the first successful push:
 
+FastAPI (production)
 
-⸻
+https://<your-fastapi-service>.onrender.com/docs
 
-🚀 13. Future Enhancements
-	•	✅ CI/CD pipeline via GitHub Actions
-	•	Model registry & versioning
-	•	Monitoring & drift detection
-	•	Integration with a cloud-hosted MLflow tracking server
+Streamlit dashboard
 
+https://<your-streamlit-service>.onrender.com
 
+These update automatically on every push
 
----
-
-## 🧰 14. Using the Makefile (Quick Commands)
-
-To simplify running the full pipeline and apps, the repository includes a **Makefile** with convenient shortcuts.
-
-### 📜 Available Commands
-
-| Command | Description |
-|----------|--------------|
-| `make load_data` | Load and preprocess the raw Telco data |
-| `make train` | Train models and log metrics to MLflow |
-| `make mlflow` | Launch MLflow tracking UI on port **5001** |
-| `make api` | Run the FastAPI inference API locally |
-| `make streamlit` | Start the Streamlit dashboard |
-| `make docker-build` | Build the Docker image for the FastAPI service |
-| `make docker-run` | Run the Docker container (port **8000**) |
-| `make clean` | Remove all generated data, models, and MLflow logs |
-| `make help` | Show a quick reference of available commands |
-
-### ⚡ Example Usage
-
-```bash
-# 1. Build the dataset and train models
-make load_data
-make train
-
-# 2. Check MLflow experiment results
-make mlflow
-
-# 3. Serve predictions locally
-make api
-# or run via Docker
-make docker-build
-make docker-run
-
-# 4. Open the dashboard
-make streamlit
