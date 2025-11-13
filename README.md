@@ -40,18 +40,23 @@ Git push → GitHub Actions → Train → Build → Test → Push Image → Rend
 
 ## 🗂️ 2. Repository Structure
 
+
+```bash
 telco-churn-mlops/
 ├─ app/
-│  ├─ fastapi_app.py        # FastAPI serving API
-│  └─ streamlit_app.py      # Optional Streamlit UI
+│  ├─ fastapi_app.py         # FastAPI serving API
+│  └─ streamlit_app.py       # Optional Streamlit UI
 ├─ src/
-│  ├─ data/load_data.py     # Load + clean dataset
-│  ├─ features/build_features.py
+│  ├─ data/
+│  │  └─ load_data.py        # Load + clean dataset
+│  ├─ features/
+│  │  └─ build_features.py
 │  └─ models/
-│     ├─ train_model.py     # Model training, MLflow logging
-│     └─ predict_model.py   # Schema-aligned inference pipeline
+│     ├─ train_model.py      # Model training, MLflow logging
+│     └─ predict_model.py     # Schema-aligned inference pipeline
 ├─ data/
-│  ├─ raw/Telco_customer_churn.xlsx   # Dataset (tracked in Git)
+│  ├─ raw/
+│  │  └─ Telco_customer_churn.xlsx   # Dataset (tracked in Git)
 │  └─ processed/                      # Generated
 ├─ models/                             # Generated (artifacts)
 ├─ mlruns/                             # Local MLflow logs
