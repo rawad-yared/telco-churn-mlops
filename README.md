@@ -64,25 +64,26 @@ telco-churn-mlops/
 ├─ requirements.txt
 ├─ Makefile
 └─ README.md
-
+```
 
 ## ⚙️ 3. Setup Instructions
 
 ### 🪄 Clone the repository
+```bash
 git clone https://github.com/rawad-yared/telco-churn-mlops.git
 cd telco-churn-mlops
-
+```
 🧱 Create and activate a virtual environment
-
+```bash
 python -m venv .venv
 source .venv/bin/activate      # macOS/Linux
 # .venv\Scripts\activate       # Windows
-
+```
 📦 Install dependencies
-
+```bash
 pip install --upgrade pip
 pip install -r requirements.txt
-
+```
 
 ⸻
 
@@ -119,14 +120,14 @@ You must create two Web Services on Render:
 	•	Render → New → Web Service
 	•	Choose “Deploy an existing image”
 	•	Use image (will be created automatically on first push):
-
+```bash
 ghcr.io/<your-username>/telco-churn-mlops:latest
-
+```
 
 	•	Start Command:
-
+```bash
 uvicorn app.fastapi_app:app --host 0.0.0.0 --port $PORT
-
+```
 
 	•	Save the service → copy the Service ID
 
@@ -160,10 +161,11 @@ These allow GitHub Actions to deploy automatically after building the image.
 Once the secrets and Render services are configured, you never run the pipeline manually again.
 
 Simply do:
-
+```bash
 git add .
 git commit -m "update"
 git push
+```
 
 GitHub Actions will automatically:
 
