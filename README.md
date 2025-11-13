@@ -69,8 +69,6 @@ telco-churn-mlops/
 ## ⚙️ 3. Setup Instructions
 
 ### 🪄 Clone the repository
-
-```bash
 git clone https://github.com/rawad-yared/telco-churn-mlops.git
 cd telco-churn-mlops
 
