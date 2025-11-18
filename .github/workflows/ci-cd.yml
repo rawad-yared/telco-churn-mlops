@@ -121,11 +121,18 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
-      - name: "Trigger deploy"
-        shell: bash
+      - name: Trigger Render Deploy-fastapi
         run: |
           API_URL="https://api.render.com/v1/services"
-          SERVICE_ID="${{ secrets.RENDER_SERVICE_ID }}"
           AUTH="Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
-            curl -X POST -H "Accept: application/json" \
-              -H "$AUTH" "$API_URL/$SERVICE_ID/deploys"
+
+          curl -X POST -H "Accept: application/json" \
+            -H "$AUTH" "$API_URL/${{ secrets.RENDER_SERVICE_ID}}/deploys"
+
+      - name: Trigger Render Deploy-streamlit
+        run: |
+          API_URL="https://api.render.com/v1/services"
+          AUTH="Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+
+          curl -X POST -H "Accept: application/json" \
+            -H "$AUTH" "$API_URL/${{ secrets.RENDER_STREAMLIT_SERVICE_ID}}/deploys"
