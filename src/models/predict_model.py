@@ -43,7 +43,7 @@ def load_model(model_path: Path = None) -> Pipeline:
     return model
 
 
-# ---------- Schema alignment helpers ----------
+# Schema alignment helpers 
 
 
 def _get_expected_input_columns(model: Pipeline):
@@ -73,7 +73,7 @@ def _get_expected_input_columns(model: Pipeline):
     for _, _, cols in ct.transformers_:
         if cols is None or cols == "drop":
             continue
-        # 'passthrough' is not used here; if it were, we'd handle separately.
+        # 'passthrough' is not used here but if it were, we'd handle separately.
         if isinstance(cols, (list, tuple, np.ndarray, pd.Index)):
             expected_cols.update(list(cols))
 
@@ -109,13 +109,13 @@ def _prepare_input_df(
                 # Missing features -> set to NaN (neutral / imputed later)
                 df[col] = np.nan
 
-        # Ensure we don't accidentally drop any provided columns;
+        # Ensure we don't accidentally drop any provided columns,
         # ColumnTransformer selects by name, so extra columns are harmless.
         # No need to reorder strictly.
     return df
 
 
-# ---------- Public prediction functions ----------
+# Public prediction functions 
 
 
 def predict_single(
