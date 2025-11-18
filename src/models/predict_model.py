@@ -109,9 +109,6 @@ def _prepare_input_df(
                 # Missing features -> set to NaN (neutral / imputed later)
                 df[col] = np.nan
 
-        # Ensure we don't accidentally drop any provided columns,
-        # ColumnTransformer selects by name, so extra columns are harmless.
-        # No need to reorder strictly.
     return df
 
 
